@@ -11,7 +11,7 @@ Setup instructions
 -------
 
 * Open `config.properties` and fill up all necessary keys and secrets, polling interval
-* Deploy to heroku: `git push`
+* Deploy to heroku: `git push` (locally: `maven clean compile`, or run with Eclipse)
 * You are done Sir
 
 Features
