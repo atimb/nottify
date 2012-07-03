@@ -1,8 +1,11 @@
 package com.nottify.notify;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.nottify.gdrive.FeedParser;
 import com.nottify.model.ModifiedEntry;
@@ -19,7 +22,7 @@ public class PollManager implements Runnable {
 
 	private static PollManager instance;
 
-	private Map<String, FeedParser> feedParsers = new HashMap<String, FeedParser>();
+	private Map<String, FeedParser> feedParsers = new ConcurrentHashMap<String, FeedParser>();
 
 	PollManager() {
 		Thread thread = new Thread(this);
@@ -44,12 +47,13 @@ public class PollManager implements Runnable {
 				// Wait configured time
 				Thread.sleep(POLL_PERIOD);
 				// Poll all authorized sessions
-				for (Map.Entry<String, FeedParser> entry : feedParsers.entrySet()) {
+				for (final Iterator<Entry<String, FeedParser>> mapIter = feedParsers.entrySet().iterator(); mapIter.hasNext(); ) {
+					Entry<String, FeedParser> entry = mapIter.next();
 					// Retrieve modified entries for a user
 					List<ModifiedEntry> entries = entry.getValue().getModifiedEntries();
-					// If authorization is revoked, don't keep trying it 
+					// If authorization is revoked, don't keep trying it
 					if (entries == null) {
-						feedParsers.remove(entry.getKey());
+						mapIter.remove();
 						break;
 					} else if (entries.size() > 0) {
 						// Otherwise notify via HTTP
